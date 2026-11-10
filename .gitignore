@@ -1,0 +1,5 @@
+__pycache__/
+.disktrace/
+*.pyc
+tests/disktrace-test-*/
+
