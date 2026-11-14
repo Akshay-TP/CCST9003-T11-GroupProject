@@ -2,4 +2,6 @@ __pycache__/
 .disktrace/
 *.pyc
 tests/disktrace-test-*/
+.capture-venv/
+presentation/screenshots/
 

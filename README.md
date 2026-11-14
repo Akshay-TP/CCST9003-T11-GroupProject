@@ -29,3 +29,21 @@ Use **Open folder** to scan your own files. Real folders are read-only. Everythi
 ## Built with
 
 Python, SQLite, HTML, CSS and JavaScript.
+
+## Local LLM explanations (optional)
+
+Install [Ollama for Windows](https://ollama.com/download/windows), open it, then double-click `start-ollama.bat`.
+The first run downloads `llama3.2:3b`. Select a file and click **Explain with local LLM**.
+
+Or run:
+
+```powershell
+ollama pull llama3.2:3b
+python app.py --ollama-model llama3.2:3b
+```
+
+The LLM explains the file category, likely purpose and possible impact of moving it.
+Only the selected file's classification metadata goes to Ollama on this computer.
+Classification, quarantine eligibility and file operations stay controlled by the application.
+If Ollama is unavailable, the inspector shows the rule explanation.
+Use `--ollama-model` with another installed local model to change it.

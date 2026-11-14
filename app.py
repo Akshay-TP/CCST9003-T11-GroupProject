@@ -12,6 +12,7 @@ import sqlite3
 import stat
 import threading
 import time
+from ollama_explanations import explain as explain_with_ollama
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE = Path(__file__).resolve().parent
@@ -336,6 +337,12 @@ def make_handler(store, token, port):
                     return self.send(200, store.scan(root, mode))
                 if self.path == "/api/quarantine":
                     return self.send(200, store.quarantine(data.get("id"), data.get("confirmed")))
+                if self.path == "/api/explain":
+                    with store.lock:
+                        row = next((dict(r) for r in (store.current or {}).get("files", []) if r["id"] == data.get("id")), None)
+                    if row is None:
+                        raise ValueError("Select a file from the current scan.")
+                    return self.send(200, explain_with_ollama(row, getattr(store, "ollama_model", None)))
                 if self.path == "/api/restore":
                     return self.send(200, store.restore(data.get("id"), data.get("confirmed")))
                 return self.send(404, {"error": "Not found."})
@@ -350,8 +357,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--data-dir", type=Path, default=BASE / ".disktrace")
+    parser.add_argument("--ollama-model", help="Enable local Ollama explanations with this installed model.")
     args = parser.parse_args()
     store = Store(args.data_dir)
+    store.ollama_model = args.ollama_model
     store.recover()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(store, secrets.token_urlsafe(32), args.port))
     print(f"DiskTrace is running at http://127.0.0.1:{args.port}\nPress Ctrl+C to stop. No administrator permission needed.", flush=True)
